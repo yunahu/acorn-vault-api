@@ -1,13 +1,15 @@
 import express from "express";
-import "dotenv/config";
+import logger from "morgan";
+import env from "./utils/env";
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+
+app.use(logger("dev"));
 
 app.get("/", (_, res) => {
   res.send("Hello World!");
 });
 
-app.listen(PORT, () => {
-  console.log(`Listening on port ${PORT}`);
+app.listen(env.PORT, () => {
+  console.log(`Listening on port ${env.PORT}`);
 });

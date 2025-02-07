@@ -1,6 +1,7 @@
 import "dotenv/config";
 
 interface Environment {
+  PORT: number;
   PG_USER: string;
   PG_PASSWORD: string;
   PG_HOST: string;
@@ -9,6 +10,7 @@ interface Environment {
 }
 
 const env: Environment = {
+  PORT: parseInt(process.env.PORT ?? "3000"),
   PG_USER: process.env.PG_USER ?? "postgres",
   PG_PASSWORD: process.env.PG_PASSWORD!,
   PG_HOST: process.env.PG_HOST!,
