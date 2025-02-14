@@ -2,18 +2,13 @@ import { Request, Response } from "express";
 import { prices } from "src/services/prices";
 
 export const getPrices = async (req: Request, res: Response) => {
-  try {
-    const { from, to, currency_id } = req.query;
+  const { from, to, currency_id } = req.query;
 
-    const data = await prices(
-      from as string,
-      to as string,
-      currency_id as string
-    );
+  const data = await prices(
+    from as string,
+    to as string,
+    currency_id as string
+  );
 
-    res.send(data);
-  } catch (err) {
-    console.error(err);
-    res.sendStatus(500);
-  }
+  res.send(data);
 };

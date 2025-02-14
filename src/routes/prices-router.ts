@@ -1,7 +1,7 @@
 import express, { NextFunction, Request, Response } from "express";
 import { getPrices } from "src/controllers/prices-controller";
 
-const router = express.Router();
+const pricesRouter = express.Router();
 
 const validateQuery = (req: Request, res: Response, next: NextFunction) => {
   if (
@@ -14,6 +14,6 @@ const validateQuery = (req: Request, res: Response, next: NextFunction) => {
   next();
 };
 
-router.use("/", validateQuery, getPrices);
+pricesRouter.use("/", validateQuery, getPrices);
 
-export default router;
+export default pricesRouter;
