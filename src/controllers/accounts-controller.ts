@@ -38,16 +38,16 @@ export const updateAccount = async (req: Request, res: Response) => {
   const { column, value } = req.body;
 
   if (!updatable.includes(column)) {
-    res.status(400).send(`Error: The column '${column}' cannot be updated.`);
+    res.status(400).send(`Error: '${column}' cannot be updated.`);
   }
 
   const updatedAccount = await retry(() =>
     timeoutablePromise(
       client
-        .query(
-          `UPDATE account SETk ${column} = $1 WHERE id = $2 RETURNING *;`,
-          [value, req.params.id]
-        )
+        .query(`UPDATE account SET ${column} = $1 WHERE id = $2 RETURNING *;`, [
+          value,
+          req.params.id,
+        ])
         .then((r) => r.rows[0])
     )
   );
@@ -59,7 +59,7 @@ export const deleteAccount = async (req: Request, res: Response) => {
   const deletedAccount = await retry(() =>
     timeoutablePromise(
       client
-        .query(`DELETE FROM account WHEREk id = $1 RETURNING *;`, [
+        .query(`DELETE FROM account WHERE id = $1 RETURNING *;`, [
           req.params.id,
         ])
         .then((r) => r.rows[0])
