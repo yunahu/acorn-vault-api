@@ -3,8 +3,8 @@ import client from 'src/services/postgres';
 import { retry, timeoutablePromise } from 'src/utils/helpers';
 import { MOCK_USER_ID } from 'src/utils/constants';
 
-export const accounts = async (req: Request, res: Response) => {
-  const userAccounts = await retry(() =>
+export const getAccounts = async (req: Request, res: Response) => {
+  const accounts = await retry(() =>
     timeoutablePromise(
       client
         .query(`SELECT * FROM account WHERE user_id = $1`, [MOCK_USER_ID])
@@ -12,7 +12,7 @@ export const accounts = async (req: Request, res: Response) => {
     )
   );
 
-  res.send(userAccounts);
+  res.send(accounts);
 };
 
 export const createAccount = async (req: Request, res: Response) => {

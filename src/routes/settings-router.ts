@@ -1,9 +1,12 @@
 import express from 'express';
-import { settings, updateSettings } from 'src/controllers/settings-controller';
+import {
+  getSettings,
+  updateSettings,
+} from 'src/controllers/settings-controller';
 
 const settingsRouter = express.Router();
 
-settingsRouter.get('/', settings);
+settingsRouter.get('/', getSettings);
 settingsRouter.patch('/', updateSettings);
 
 export default settingsRouter;

@@ -1,6 +1,6 @@
 import express from 'express';
 import {
-  accounts,
+  getAccounts,
   createAccount,
   deleteAccount,
   updateAccount,
@@ -8,7 +8,7 @@ import {
 
 const accountsRouter = express.Router();
 
-accountsRouter.get('/', accounts);
+accountsRouter.get('/', getAccounts);
 accountsRouter.post('/', createAccount);
 accountsRouter.patch('/:id', updateAccount);
 accountsRouter.delete('/:id', deleteAccount);

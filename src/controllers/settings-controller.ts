@@ -3,8 +3,8 @@ import client from 'src/services/postgres';
 import { MOCK_USER_ID } from 'src/utils/constants';
 import { retry, timeoutablePromise } from 'src/utils/helpers';
 
-export const settings = async (req: Request, res: Response) => {
-  const userSettings = await retry(() =>
+export const getSettings = async (req: Request, res: Response) => {
+  const settings = await retry(() =>
     timeoutablePromise(
       client
         .query(`SELECT * FROM setting WHERE user_id = $1`, [MOCK_USER_ID])
@@ -12,7 +12,7 @@ export const settings = async (req: Request, res: Response) => {
     )
   );
 
-  res.send(userSettings);
+  res.send(settings);
 };
 
 export const updateSettings = async (req: Request, res: Response) => {

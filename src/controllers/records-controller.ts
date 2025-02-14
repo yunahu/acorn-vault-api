@@ -3,10 +3,10 @@ import client from 'src/services/postgres';
 import { retry, timeoutablePromise } from 'src/utils/helpers';
 import { MOCK_USER_ID } from 'src/utils/constants';
 
-export const records = async (req: Request, res: Response) => {
+export const getRecords = async (req: Request, res: Response) => {
   const { from, to } = req.query;
 
-  const userRecords = await retry(() =>
+  const records = await retry(() =>
     timeoutablePromise(
       client
         .query(
@@ -17,7 +17,7 @@ export const records = async (req: Request, res: Response) => {
     )
   );
 
-  res.send(userRecords);
+  res.send(records);
 };
 
 export const createRecord = async (req: Request, res: Response) => {
