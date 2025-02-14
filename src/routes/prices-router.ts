@@ -14,6 +14,6 @@ const validateQuery = (req: Request, res: Response, next: NextFunction) => {
   next();
 };
 
-pricesRouter.use('/', validateQuery, getPrices);
+pricesRouter.get('/', validateQuery, getPrices);
 
 export default pricesRouter;
