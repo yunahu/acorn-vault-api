@@ -1,7 +1,7 @@
-import { Request, Response } from "express";
-import client from "src/services/postgres";
-import { retry, timeoutablePromise } from "src/utils/helpers";
-import { MOCK_USER_ID } from "src/utils/constants";
+import { Request, Response } from 'express';
+import client from 'src/services/postgres';
+import { retry, timeoutablePromise } from 'src/utils/helpers';
+import { MOCK_USER_ID } from 'src/utils/constants';
 
 export const accounts = async (req: Request, res: Response) => {
   const userAccounts = await retry(() =>
@@ -33,7 +33,7 @@ export const createAccount = async (req: Request, res: Response) => {
 };
 
 export const updateAccount = async (req: Request, res: Response) => {
-  const updatable = ["name", "balance", "is_primary_payment_method"];
+  const updatable = ['name', 'balance', 'is_primary_payment_method'];
 
   const { column, value } = req.body;
 

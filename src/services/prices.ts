@@ -1,5 +1,5 @@
-import client from "src/services/postgres";
-import { retry, timeoutablePromise } from "src/utils/helpers";
+import client from 'src/services/postgres';
+import { retry, timeoutablePromise } from 'src/utils/helpers';
 
 export const prices = async (from: string, to: string, currency_id: string) =>
   retry(() =>

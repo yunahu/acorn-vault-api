@@ -1,5 +1,5 @@
-import pg from "pg";
-import env from "src/utils/env";
+import pg from 'pg';
+import env from 'src/utils/env';
 
 const { Client } = pg;
 
