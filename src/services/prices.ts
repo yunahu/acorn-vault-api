@@ -1,6 +1,5 @@
 import axios from 'axios';
 import client from 'src/services/postgres';
-import { retry, timeoutablePromise } from 'src/utils/helpers';
 
 interface Currency {
   id: number;
@@ -16,40 +15,28 @@ interface Rates {
 }
 
 const getDbPrices = (from: string, to: string, currency_id: string | number) =>
-  retry(() =>
-    timeoutablePromise(
-      client
-        .query(
-          `SELECT * FROM price WHERE date BETWEEN $1 AND $2 AND currency_id = $3`,
-          [from, to, currency_id]
-        )
-        .then((r) => r.rows)
+  client
+    .query(
+      `SELECT * FROM price WHERE date BETWEEN $1 AND $2 AND currency_id = $3`,
+      [from, to, currency_id]
     )
-  );
+    .then((r) => r.rows);
 
 const getApiPrices = (
   from: string,
   to: string,
   currency_code: string | number
 ) =>
-  retry(() =>
-    timeoutablePromise(
-      axios
-        .get(
-          `https://api.frankfurter.dev/v1/${from}..${to}?base=USD&symbols=${currency_code}`
-        )
-        .then((r) => r.data.rates as Rates[])
+  axios
+    .get(
+      `https://api.frankfurter.dev/v1/${from}..${to}?base=USD&symbols=${currency_code}`
     )
-  );
+    .then((r) => r.data.rates as Rates[]);
 
 const currencyById = (currency_id: string | number) =>
-  retry(() =>
-    timeoutablePromise(
-      client
-        .query(`SELECT * FROM currency WHERE id = $1`, [currency_id])
-        .then((r) => r.rows[0] as Currency)
-    )
-  );
+  client
+    .query(`SELECT * FROM currency WHERE id = $1`, [currency_id])
+    .then((r) => r.rows[0] as Currency);
 
 const updatePrices = async (
   from: string,
@@ -73,9 +60,7 @@ const updatePrices = async (
   const query = `INSERT INTO price (currency_id, date, price) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING`;
   for (const { currency_id, date, rate } of reformatted) {
     try {
-      retry(() =>
-        timeoutablePromise(client.query(query, [currency_id, date, rate]))
-      );
+      client.query(query, [currency_id, date, rate]);
     } catch (err) {
       console.error(err);
     }
