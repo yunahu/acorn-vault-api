@@ -1,7 +1,10 @@
 import express, { NextFunction, Request, Response } from 'express';
-import { getPrices } from 'src/controllers/prices-controller';
+import {
+  getCurrencies,
+  getPrices,
+} from 'src/controllers/currencies-controller';
 
-const pricesRouter = express.Router();
+const currenciesRouter = express.Router();
 
 const validateQuery = (req: Request, res: Response, next: NextFunction) => {
   if (
@@ -14,6 +17,7 @@ const validateQuery = (req: Request, res: Response, next: NextFunction) => {
   next();
 };
 
-pricesRouter.get('/', validateQuery, getPrices);
+currenciesRouter.get('/', getCurrencies);
+currenciesRouter.get('/prices', validateQuery, getPrices);
 
-export default pricesRouter;
+export default currenciesRouter;

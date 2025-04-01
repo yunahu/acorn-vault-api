@@ -1,14 +1,15 @@
 import express from 'express';
 import accountsRouter from './accounts-router';
-import pricesRouter from './prices-router';
+import currenciesRouter from './currencies-router';
 import recordsRouter from './records-router';
 import settingsRouter from './settings-router';
+import { authenticate } from 'src/middlewares/authenticate';
 
 const router = express.Router();
 
-router.use('/accounts', accountsRouter);
-router.use('/prices', pricesRouter);
-router.use('/records', recordsRouter);
-router.use('/settings', settingsRouter);
+router.use('/accounts', authenticate, accountsRouter);
+router.use('/currencies', currenciesRouter);
+router.use('/records', authenticate, recordsRouter);
+router.use('/settings', authenticate, settingsRouter);
 
 export default router;
