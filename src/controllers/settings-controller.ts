@@ -1,10 +1,11 @@
 import { Request, Response } from 'express';
 import client from 'src/services/postgres';
-import { MOCK_USER_ID } from 'src/utils/constants';
 
 export const getSettings = async (req: Request, res: Response) => {
   const settings = await client
-    .query(`SELECT * FROM setting WHERE user_id = $1`, [MOCK_USER_ID])
+    .query(`SELECT primary_currency FROM setting WHERE firebase_uid = $1`, [
+      req.user.uid,
+    ])
     .then((r) => r.rows[0]);
 
   res.send(settings);
@@ -12,7 +13,6 @@ export const getSettings = async (req: Request, res: Response) => {
 
 export const updateSettings = async (req: Request, res: Response) => {
   const updatable = ['primary_currency'];
-  const user_id = MOCK_USER_ID;
 
   const { column, value } = req.body;
 
@@ -22,8 +22,8 @@ export const updateSettings = async (req: Request, res: Response) => {
 
   const updatedSettings = await client
     .query(
-      `UPDATE setting SET ${column} = $1 WHERE user_id = $2 RETURNING *;`,
-      [value, user_id]
+      `UPDATE setting SET ${column} = $1 WHERE firebase_uid = $2 RETURNING *;`,
+      [value, req.user.uid]
     )
     .then((r) => r.rows[0]);
 

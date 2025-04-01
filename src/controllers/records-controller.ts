@@ -1,14 +1,13 @@
 import { Request, Response } from 'express';
 import client from 'src/services/postgres';
-import { MOCK_USER_ID } from 'src/utils/constants';
 
 export const getRecords = async (req: Request, res: Response) => {
   const { from, to } = req.query;
 
   const records = await client
     .query(
-      `SELECT * FROM record WHERE user_id = $1 AND record_date BETWEEN $2 AND $3`,
-      [MOCK_USER_ID, from, to]
+      `SELECT id, date, description, account_id, amount FROM record WHERE firebase_uid = $1 AND date BETWEEN $2 AND $3;`,
+      [req.user.uid, from, to]
     )
     .then((r) => r.rows);
 
@@ -16,13 +15,12 @@ export const getRecords = async (req: Request, res: Response) => {
 };
 
 export const createRecord = async (req: Request, res: Response) => {
-  const { record_date, description, account_id, amount } = req.body;
-  const user_id = MOCK_USER_ID;
+  const { date, description, account_id, amount } = req.body;
 
   const newRecord = await client
     .query(
-      `INSERT INTO record (record_date, description, account_id, amount, user_id) VALUES ($1, $2, $3, $4, $5) RETURNING *;`,
-      [record_date, description, account_id, amount, user_id]
+      `INSERT INTO record (date, description, account_id, amount, firebase_uid) VALUES ($1, $2, $3, $4, $5) RETURNING *;`,
+      [date, description, account_id, amount, req.user.uid]
     )
     .then((r) => r.rows[0]);
 
@@ -30,7 +28,7 @@ export const createRecord = async (req: Request, res: Response) => {
 };
 
 export const updateRecord = async (req: Request, res: Response) => {
-  const updatable = ['record_date', 'description', 'account_id', 'amount'];
+  const updatable = ['date', 'description', 'account_id', 'amount'];
 
   const { column, value } = req.body;
 

@@ -1,10 +1,12 @@
 import { Request, Response } from 'express';
 import client from 'src/services/postgres';
-import { MOCK_USER_ID } from 'src/utils/constants';
 
 export const getAccounts = async (req: Request, res: Response) => {
   const accounts = await client
-    .query(`SELECT * FROM account WHERE user_id = $1`, [MOCK_USER_ID])
+    .query(
+      `SELECT id, name, currency_id, balance, is_primary_payment_method FROM account WHERE firebase_uid = $1 ORDER BY id;`,
+      [req.user.uid]
+    )
     .then((r) => r.rows);
 
   res.send(accounts);
@@ -15,8 +17,8 @@ export const createAccount = async (req: Request, res: Response) => {
 
   const newAccount = await client
     .query(
-      `INSERT INTO account (name, currency_id, balance, is_primary_payment_method, user_id) VALUES ($1, $2, $3, $4, $5) RETURNING *;`,
-      [name, currency_id, balance, is_primary_payment_method, MOCK_USER_ID]
+      `INSERT INTO account (name, currency_id, balance, is_primary_payment_method, firebase_uid) VALUES ($1, $2, $3, $4, $5) RETURNING *;`,
+      [name, currency_id, balance, is_primary_payment_method, req.user.uid]
     )
     .then((r) => r.rows[0]);
 

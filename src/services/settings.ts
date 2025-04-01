@@ -1,11 +1,11 @@
 import client from 'src/services/postgres';
 
-export const createSettings = (user_id: number) =>
+export const createSettings = (uid: number) =>
   client
-    .query(`INSERT INTO setting (user_id) VALUES ($1) RETURNING *;`, [user_id])
+    .query(`INSERT INTO setting (firebase_uid) VALUES ($1) RETURNING *;`, [uid])
     .then((r) => r.rows[0]);
 
-export const deleteSettings = (user_id: number) =>
+export const deleteSettings = (uid: number) =>
   client
-    .query(`DELETE FROM setting WHERE user_id = $1 RETURNING *;`, [user_id])
+    .query(`DELETE FROM setting WHERE firebase_uid = $1 RETURNING *;`, [uid])
     .then((r) => r.rows[0]);
