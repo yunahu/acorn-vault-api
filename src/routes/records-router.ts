@@ -1,9 +1,9 @@
 import express from 'express';
 import {
-  createRecord,
-  deleteRecord,
   getRecords,
+  createRecord,
   updateRecord,
+  deleteRecord,
 } from 'src/controllers/records-controller';
 
 const recordsRouter = express.Router();

@@ -13,12 +13,12 @@ export const getAccounts = async (req: Request, res: Response) => {
 };
 
 export const createAccount = async (req: Request, res: Response) => {
-  const { name, currency_id, balance, is_primary_payment_method } = req.body;
+  const { name, currencyId, balance, isPrimaryPaymentMethod } = req.body;
 
   const newAccount = await client
     .query(
       `INSERT INTO account (name, currency_id, balance, is_primary_payment_method, firebase_uid) VALUES ($1, $2, $3, $4, $5) RETURNING *;`,
-      [name, currency_id, balance, is_primary_payment_method, req.user.uid]
+      [name, currencyId, balance, isPrimaryPaymentMethod, req.user.uid]
     )
     .then((r) => r.rows[0]);
 

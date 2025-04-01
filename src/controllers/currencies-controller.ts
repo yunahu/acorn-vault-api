@@ -11,13 +11,9 @@ export const getCurrencies = async (req: Request, res: Response) => {
 };
 
 export const getPrices = async (req: Request, res: Response) => {
-  const { from, to, currency_id } = req.query;
+  const { from, to, currencyId } = req.query;
 
-  const data = await prices(
-    from as string,
-    to as string,
-    currency_id as string
-  );
+  const data = await prices(from as string, to as string, currencyId as string);
 
   res.send(data);
 };

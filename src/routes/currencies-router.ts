@@ -10,7 +10,7 @@ const validateQuery = (req: Request, res: Response, next: NextFunction) => {
   if (
     typeof req.query.from !== 'string' ||
     typeof req.query.to !== 'string' ||
-    typeof req.query.currency_id !== 'string'
+    typeof req.query.currencyId !== 'string'
   )
     res.status(400).json({ message: 'Error: Invalid query values' });
 

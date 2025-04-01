@@ -2,8 +2,8 @@ import express from 'express';
 import {
   getAccounts,
   createAccount,
-  deleteAccount,
   updateAccount,
+  deleteAccount,
 } from 'src/controllers/accounts-controller';
 
 const accountsRouter = express.Router();
