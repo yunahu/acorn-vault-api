@@ -15,10 +15,12 @@ export const authenticate = async (
       req.user = { uid };
     } else {
       res.sendStatus(401);
+      return;
     }
   } catch (err) {
     console.error(err);
     res.sendStatus(401);
+    return;
   }
 
   next();

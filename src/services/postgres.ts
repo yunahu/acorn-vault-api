@@ -1,5 +1,9 @@
-import pg from 'pg';
+import dayjs from 'dayjs';
+import pg, { types } from 'pg';
 import env from 'src/utils/env';
+
+// Override DATE type conversion to UTC
+types.setTypeParser(1082, (str) => dayjs.utc(str));
 
 const { Client } = pg;
 

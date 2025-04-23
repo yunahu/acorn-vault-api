@@ -1,9 +1,13 @@
 import express from 'express';
 import logger from 'morgan';
 import cors from 'cors';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
 import routes from 'src/routes/router';
 import client from 'src/services/postgres';
 import env from 'src/utils/env';
+
+dayjs.extend(utc);
 
 const app = express();
 

@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import client from 'src/services/postgres';
+import { containRequiredFields } from 'src/utils/validation';
 
 export const getAccounts = async (req: Request, res: Response) => {
   const accounts = await client
@@ -14,6 +15,7 @@ export const getAccounts = async (req: Request, res: Response) => {
 
 export const createAccount = async (req: Request, res: Response) => {
   const { name, currencyId, balance, isPrimaryPaymentMethod } = req.body;
+  if (!containRequiredFields({ name, currencyId }, res)) return;
 
   const newAccount = await client
     .query(
@@ -22,32 +24,38 @@ export const createAccount = async (req: Request, res: Response) => {
     )
     .then((r) => r.rows[0]);
 
-  res.send(newAccount);
+  newAccount ? res.sendStatus(204) : res.sendStatus(500);
 };
 
 export const updateAccount = async (req: Request, res: Response) => {
-  const updatable = ['name', 'balance', 'is_primary_payment_method'];
-
   const { column, value } = req.body;
+  if (!containRequiredFields({ column, value }, res)) return;
 
+  const updatable = ['name', 'balance', 'is_primary_payment_method'];
   if (!updatable.includes(column)) {
-    res.status(400).send(`Error: '${column}' cannot be updated.`);
+    res.status(400).json({
+      message: `'${column}' cannot be updated.`,
+    });
+    return;
   }
 
-  const updatedAccount = client
+  const updatedAccount = await client
     .query(`UPDATE account SET ${column} = $1 WHERE id = $2 RETURNING *;`, [
       value,
       req.params.id,
     ])
     .then((r) => r.rows[0]);
 
-  res.send(updatedAccount);
+  updatedAccount ? res.sendStatus(204) : res.sendStatus(500);
 };
 
 export const deleteAccount = async (req: Request, res: Response) => {
+  const id = req.params.id;
+  if (!containRequiredFields({ id }, res)) return;
+
   const deletedAccount = await client
-    .query(`DELETE FROM account WHERE id = $1 RETURNING *;`, [req.params.id])
+    .query(`DELETE FROM account WHERE id = $1 RETURNING *;`, [id])
     .then((r) => r.rows[0]);
 
-  res.send(deletedAccount);
+  deletedAccount ? res.sendStatus(204) : res.sendStatus(500);
 };

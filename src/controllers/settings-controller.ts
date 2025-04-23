@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import client from 'src/services/postgres';
+import { containRequiredFields } from 'src/utils/validation';
 
 export const getSettings = async (req: Request, res: Response) => {
   const settings = await client
@@ -8,17 +9,15 @@ export const getSettings = async (req: Request, res: Response) => {
     ])
     .then((r) => r.rows[0]);
 
-  res.send(settings);
+  settings ? res.send(settings) : res.sendStatus(500);
 };
 
 export const updateSettings = async (req: Request, res: Response) => {
-  const updatable = ['primary_currency'];
-
   const { column, value } = req.body;
+  if (!containRequiredFields({ column, value }, res)) return;
 
-  if (!updatable.includes(column)) {
-    res.status(400).send(`Error: '${column}' cannot be updated.`);
-  }
+  const updatable = ['primary_currency'];
+  if (!updatable.includes(column)) `'${column}' cannot be updated.`;
 
   const updatedSettings = await client
     .query(
@@ -27,5 +26,5 @@ export const updateSettings = async (req: Request, res: Response) => {
     )
     .then((r) => r.rows[0]);
 
-  res.send(updatedSettings);
+  updatedSettings ? res.sendStatus(204) : res.sendStatus(500);
 };

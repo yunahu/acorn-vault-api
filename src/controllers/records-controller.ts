@@ -1,14 +1,22 @@
 import { Request, Response } from 'express';
 import client from 'src/services/postgres';
+import { containRequiredFields } from 'src/utils/validation';
 
 export const getRecords = async (req: Request, res: Response) => {
   const { from, to } = req.query;
 
+  const query = `
+			SELECT id, date, description, account_id, amount 
+			FROM record 
+			WHERE 
+			firebase_uid = $1
+			AND ($2::date IS NULL OR date >= $2)
+			AND ($3::date IS NULL OR date <= $3)
+			ORDER BY date, id;
+		`;
+
   const records = await client
-    .query(
-      `SELECT id, date, description, account_id, amount FROM record WHERE firebase_uid = $1 AND date BETWEEN $2 AND $3;`,
-      [req.user.uid, from, to]
-    )
+    .query(query, [req.user.uid, from, to])
     .then((r) => r.rows);
 
   res.send(records);
@@ -16,6 +24,7 @@ export const getRecords = async (req: Request, res: Response) => {
 
 export const createRecord = async (req: Request, res: Response) => {
   const { date, description, accountId, amount } = req.body;
+  if (!containRequiredFields({ date, description }, res)) return;
 
   const newRecord = await client
     .query(
@@ -24,16 +33,19 @@ export const createRecord = async (req: Request, res: Response) => {
     )
     .then((r) => r.rows[0]);
 
-  res.send(newRecord);
+  newRecord ? res.sendStatus(204) : res.sendStatus(500);
 };
 
 export const updateRecord = async (req: Request, res: Response) => {
-  const updatable = ['date', 'description', 'account_id', 'amount'];
-
   const { column, value } = req.body;
+  if (!containRequiredFields({ column, value }, res)) return;
 
+  const updatable = ['date', 'description', 'account_id', 'amount'];
   if (!updatable.includes(column)) {
-    res.status(400).send(`Error: '${column}' cannot be updated.`);
+    res.status(400).json({
+      message: `'${column}' cannot be updated.`,
+    });
+    return;
   }
 
   const updatedRecord = await client
@@ -43,13 +55,16 @@ export const updateRecord = async (req: Request, res: Response) => {
     ])
     .then((r) => r.rows[0]);
 
-  res.send(updatedRecord);
+  updatedRecord ? res.sendStatus(204) : res.sendStatus(500);
 };
 
 export const deleteRecord = async (req: Request, res: Response) => {
+  const id = req.params.id;
+  if (!containRequiredFields({ id }, res)) return;
+
   const deletedRecord = await client
-    .query(`DELETE FROM record WHERE id = $1 RETURNING *;`, [req.params.id])
+    .query(`DELETE FROM record WHERE id = $1 RETURNING *;`, [id])
     .then((r) => r.rows[0]);
 
-  res.send(deletedRecord);
+  deletedRecord ? res.sendStatus(204) : res.sendStatus(500);
 };

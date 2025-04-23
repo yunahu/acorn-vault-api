@@ -3,16 +3,22 @@ import {
   getCurrencies,
   getPrices,
 } from 'src/controllers/currencies-controller';
+import { containRequiredFields } from 'src/utils/validation';
 
 const currenciesRouter = express.Router();
 
 const validateQuery = (req: Request, res: Response, next: NextFunction) => {
+  const { from, to, currencyId } = req.query;
+  if (!containRequiredFields({ from, to, currencyId }, res)) return;
+
   if (
-    typeof req.query.from !== 'string' ||
-    typeof req.query.to !== 'string' ||
-    typeof req.query.currencyId !== 'string'
-  )
-    res.status(400).json({ message: 'Error: Invalid query values' });
+    typeof from !== 'string' ||
+    typeof to !== 'string' ||
+    typeof currencyId !== 'string'
+  ) {
+    res.status(400).json({ message: 'Invalid query values' });
+    return;
+  }
 
   next();
 };
