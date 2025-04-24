@@ -14,7 +14,7 @@ export const getSettings = async (req: Request, res: Response) => {
 
 export const updateSettings = async (req: Request, res: Response) => {
   const { column, value } = req.body;
-  if (!containRequiredFields({ column, value }, res)) return;
+  if (!containRequiredFields({ column }, res)) return;
 
   const updatable = ['primary_currency'];
   if (!updatable.includes(column)) `'${column}' cannot be updated.`;

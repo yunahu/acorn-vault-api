@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import client from 'src/services/postgres';
-import { containRequiredFields } from 'src/utils/validation';
+import { containRequiredFields, isEmptyString } from 'src/utils/validation';
 
 export const getAccounts = async (req: Request, res: Response) => {
   const accounts = await client
@@ -16,6 +16,7 @@ export const getAccounts = async (req: Request, res: Response) => {
 export const createAccount = async (req: Request, res: Response) => {
   const { name, currencyId, balance, isPrimaryPaymentMethod } = req.body;
   if (!containRequiredFields({ name, currencyId }, res)) return;
+  if (!isEmptyString({ name }, res)) return;
 
   const newAccount = await client
     .query(
@@ -29,7 +30,8 @@ export const createAccount = async (req: Request, res: Response) => {
 
 export const updateAccount = async (req: Request, res: Response) => {
   const { column, value } = req.body;
-  if (!containRequiredFields({ column, value }, res)) return;
+  if (!containRequiredFields({ column }, res)) return;
+  if (column === 'name') if (!isEmptyString({ name: value }, res)) return;
 
   const updatable = ['name', 'balance', 'is_primary_payment_method'];
   if (!updatable.includes(column)) {

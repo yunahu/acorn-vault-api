@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import client from 'src/services/postgres';
-import { containRequiredFields } from 'src/utils/validation';
+import { containRequiredFields, isEmptyString } from 'src/utils/validation';
 
 export const getRecords = async (req: Request, res: Response) => {
   const { from, to } = req.query;
@@ -25,6 +25,7 @@ export const getRecords = async (req: Request, res: Response) => {
 export const createRecord = async (req: Request, res: Response) => {
   const { date, description, accountId, amount } = req.body;
   if (!containRequiredFields({ date, description }, res)) return;
+  if (!isEmptyString({ description }, res)) return;
 
   const newRecord = await client
     .query(
@@ -38,7 +39,9 @@ export const createRecord = async (req: Request, res: Response) => {
 
 export const updateRecord = async (req: Request, res: Response) => {
   const { column, value } = req.body;
-  if (!containRequiredFields({ column, value }, res)) return;
+  if (!containRequiredFields({ column }, res)) return;
+  if (column === 'description')
+    if (!isEmptyString({ description: value }, res)) return;
 
   const updatable = ['date', 'description', 'account_id', 'amount'];
   if (!updatable.includes(column)) {

@@ -17,3 +17,21 @@ export const containRequiredFields = (
     return false;
   } else return true;
 };
+
+export const isEmptyString = (
+  strings: { [key: string]: string },
+  res: Response
+): boolean => {
+  const emptyField = [];
+
+  for (const [key, value] of Object.entries(strings)) {
+    if (!value.trim()) emptyField.push(key);
+  }
+
+  if (emptyField.length) {
+    res.status(400).json({
+      message: `Field(s) with empty string: ${emptyField.join(', ')}`,
+    });
+    return false;
+  } else return true;
+};
