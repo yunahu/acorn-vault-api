@@ -1,15 +1,15 @@
 import express from 'express';
 import {
-  getRecords,
   createRecord,
+  getRecords,
   updateRecord,
   deleteRecord,
 } from 'src/controllers/records-controller';
 
 const recordsRouter = express.Router();
 
-recordsRouter.get('/', getRecords);
 recordsRouter.post('/', createRecord);
+recordsRouter.get('/', getRecords);
 recordsRouter.patch('/:id', updateRecord);
 recordsRouter.delete('/:id', deleteRecord);
 

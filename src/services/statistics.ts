@@ -1,24 +1,24 @@
-import { settings } from 'src/services/settings';
-import { latestPricesAll } from 'src/services/currencies';
-import { accounts } from 'src/services/accounts';
+import { getDbAccounts } from 'src/services/accounts';
+import { getLatestPrices } from 'src/services/currencies';
+import { getPrimaryCurrency } from 'src/services/settings';
 
-export const netWorth = async (uid: string) => {
-  const data = await accounts(uid);
-  if (!data) {
+export const calculateNetWorth = async (uid: string) => {
+  const accounts = await getDbAccounts(uid);
+  if (!accounts) {
     return undefined;
   }
 
-  const primaryCurrency = await settings(uid).then((x) => x?.primary_currency);
+  const primaryCurrency = await getPrimaryCurrency(uid);
 
-  if (!data.length) {
+  if (!accounts.length) {
     return {
       currency_id: primaryCurrency,
       amount: 0,
     };
   }
 
-  const prices = await latestPricesAll();
-  const amountUSD = data.reduce((acc, current) => {
+  const prices = await getLatestPrices();
+  const amountUSD = accounts.reduce((acc, current) => {
     if (current.currency_id === 1) {
       return acc + parseFloat(current.balance);
     } else {

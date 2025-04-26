@@ -14,21 +14,13 @@ interface Rates {
   };
 }
 
-export const currencies = async () =>
+export const getDbCurrencies = async () =>
   client.query(`SELECT * FROM currency`).then((r) => r.rows);
 
-export const currencyById = (currencyId: string | number) =>
+export const getDbCurrencyById = (currencyId: string | number) =>
   client
     .query(`SELECT * FROM currency WHERE id = $1`, [currencyId])
     .then((r) => r.rows[0] as Currency);
-
-const getDbPrices = (from: string, to: string, currencyId: string | number) =>
-  client
-    .query(
-      `SELECT * FROM price WHERE date BETWEEN $1 AND $2 AND currency_id = $3`,
-      [from, to, currencyId]
-    )
-    .then((r) => r.rows);
 
 const getApiPrices = (
   from: string,
@@ -46,7 +38,7 @@ const updatePrices = async (
   to: string,
   currencyId: string | number
 ) => {
-  const currency = await currencyById(currencyId);
+  const currency = await getDbCurrencyById(currencyId);
   if (!currency) throw new Error('Invalid currency id');
 
   const rates = await getApiPrices(from, to, currency.code);
@@ -72,18 +64,23 @@ const updatePrices = async (
   return reformatted;
 };
 
-export const prices = async (
+export const getDbPrices = async (
   from: string,
   to: string,
   currencyId: string | number
 ) => {
-  const data = await getDbPrices(from, to, currencyId);
+  const prices = await client
+    .query(
+      `SELECT * FROM price WHERE date BETWEEN $1 AND $2 AND currency_id = $3`,
+      [from, to, currencyId]
+    )
+    .then((r) => r.rows);
 
-  if (data.length) return data;
+  if (prices.length) return prices;
   else return updatePrices(from, to, currencyId);
 };
 
-export const latestPricesAll = async () =>
+export const getLatestPrices = async () =>
   client
     .query(
       `SELECT DISTINCT ON (currency_id) currency_id, price

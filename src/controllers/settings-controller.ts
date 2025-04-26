@@ -1,12 +1,12 @@
 import { Request, Response } from 'express';
 import client from 'src/services/postgres';
-import { settings } from 'src/services/settings';
+import { getDbSettings } from 'src/services/settings';
 import { containRequiredFields } from 'src/utils/validation';
 
 export const getSettings = async (req: Request, res: Response) => {
-  const data = await settings(req.user.uid);
+  const settings = await getDbSettings(req.user.uid);
 
-  data ? res.send(data) : res.sendStatus(500);
+  settings ? res.send(settings) : res.sendStatus(500);
 };
 
 export const updateSettings = async (req: Request, res: Response) => {

@@ -1,11 +1,11 @@
 import { Request, Response } from 'express';
 import client from 'src/services/postgres';
-import { accounts } from 'src/services/accounts';
+import { getDbAccounts } from 'src/services/accounts';
 import { containRequiredFields, isEmptyString } from 'src/utils/validation';
 
 export const getAccounts = async (req: Request, res: Response) => {
-  const data = await accounts(req.user.uid);
-  res.send(data);
+  const accounts = await getDbAccounts(req.user.uid);
+  res.send(accounts);
 };
 
 export const createAccount = async (req: Request, res: Response) => {

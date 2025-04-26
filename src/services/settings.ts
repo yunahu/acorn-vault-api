@@ -5,23 +5,26 @@ export const createSettings = (uid: string) =>
     .query(`INSERT INTO setting (firebase_uid) VALUES ($1) RETURNING *;`, [uid])
     .then((r) => r.rows[0]);
 
-export const settings = async (uid: string) => {
-  const getDbSettings = async (uid: string) =>
+export const getDbSettings = async (uid: string) => {
+  const fetch = async (uid: string) =>
     client
       .query(`SELECT primary_currency FROM setting WHERE firebase_uid = $1`, [
         uid,
       ])
       .then((r) => r.rows[0]);
 
-  let data = await getDbSettings(uid);
+  let settings = await fetch(uid);
 
-  if (!data) {
+  if (!settings) {
     await createSettings(uid);
-    data = await getDbSettings(uid);
+    settings = await fetch(uid);
   }
 
-  return data;
+  return settings;
 };
+
+export const getPrimaryCurrency = async (uid: string) =>
+  getDbSettings(uid).then((x) => x?.primary_currency);
 
 export const deleteSettings = (uid: string) =>
   client

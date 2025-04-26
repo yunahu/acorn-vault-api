@@ -1,10 +1,10 @@
 import { Request, Response } from 'express';
-import { netWorth } from 'src/services/statistics';
+import { calculateNetWorth } from 'src/services/statistics';
 
 export const getNetWorth = async (req: Request, res: Response) => {
-  const response = await netWorth(req.user.uid);
-  if (response === undefined) {
+  const netWorth = await calculateNetWorth(req.user.uid);
+  if (netWorth === undefined) {
     res.sendStatus(500);
     return;
-  } else res.json(response);
+  } else res.json(netWorth);
 };
