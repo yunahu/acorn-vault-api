@@ -1,13 +1,10 @@
 import { Request, Response } from 'express';
-import client from 'src/services/postgres';
-import { prices } from 'src/services/prices';
+import { currencies, prices } from 'src/services/currencies';
 
 export const getCurrencies = async (req: Request, res: Response) => {
-  const currencies = await client
-    .query(`SELECT * FROM currency`)
-    .then((r) => r.rows);
+  const data = await currencies();
 
-  res.send(currencies);
+  res.send(data);
 };
 
 export const getPrices = async (req: Request, res: Response) => {

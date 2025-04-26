@@ -14,6 +14,14 @@ interface Rates {
   };
 }
 
+export const currencies = async () =>
+  client.query(`SELECT * FROM currency`).then((r) => r.rows);
+
+export const currencyById = (currencyId: string | number) =>
+  client
+    .query(`SELECT * FROM currency WHERE id = $1`, [currencyId])
+    .then((r) => r.rows[0] as Currency);
+
 const getDbPrices = (from: string, to: string, currencyId: string | number) =>
   client
     .query(
@@ -32,11 +40,6 @@ const getApiPrices = (
       `https://api.frankfurter.dev/v1/${from}..${to}?base=USD&symbols=${currencyCode}`
     )
     .then((r) => r.data.rates as Rates[]);
-
-const currencyById = (currencyId: string | number) =>
-  client
-    .query(`SELECT * FROM currency WHERE id = $1`, [currencyId])
-    .then((r) => r.rows[0] as Currency);
 
 const updatePrices = async (
   from: string,
@@ -79,3 +82,12 @@ export const prices = async (
   if (data.length) return data;
   else return updatePrices(from, to, currencyId);
 };
+
+export const latestPricesAll = async () =>
+  client
+    .query(
+      `SELECT DISTINCT ON (currency_id) currency_id, price
+			FROM price
+			ORDER BY currency_id, date DESC;`
+    )
+    .then((r) => r.rows);

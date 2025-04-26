@@ -1,15 +1,12 @@
 import { Request, Response } from 'express';
 import client from 'src/services/postgres';
+import { settings } from 'src/services/settings';
 import { containRequiredFields } from 'src/utils/validation';
 
 export const getSettings = async (req: Request, res: Response) => {
-  const settings = await client
-    .query(`SELECT primary_currency FROM setting WHERE firebase_uid = $1`, [
-      req.user.uid,
-    ])
-    .then((r) => r.rows[0]);
+  const data = await settings(req.user.uid);
 
-  settings ? res.send(settings) : res.sendStatus(500);
+  data ? res.send(data) : res.sendStatus(500);
 };
 
 export const updateSettings = async (req: Request, res: Response) => {

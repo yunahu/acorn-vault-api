@@ -1,16 +1,11 @@
 import { Request, Response } from 'express';
 import client from 'src/services/postgres';
+import { accounts } from 'src/services/accounts';
 import { containRequiredFields, isEmptyString } from 'src/utils/validation';
 
 export const getAccounts = async (req: Request, res: Response) => {
-  const accounts = await client
-    .query(
-      `SELECT id, name, currency_id, balance, is_primary_payment_method FROM account WHERE firebase_uid = $1 ORDER BY id;`,
-      [req.user.uid]
-    )
-    .then((r) => r.rows);
-
-  res.send(accounts);
+  const data = await accounts(req.user.uid);
+  res.send(data);
 };
 
 export const createAccount = async (req: Request, res: Response) => {
