@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import client from 'src/services/postgres';
-import { getDbSettings } from 'src/services/settings';
+import { getDbSettings, deleteSettings } from 'src/services/settings';
 import { containRequiredFields } from 'src/utils/validation';
 
 export const getSettings = async (req: Request, res: Response) => {
@@ -24,4 +24,24 @@ export const updateSettings = async (req: Request, res: Response) => {
     .then((r) => r.rows[0]);
 
   updatedSettings ? res.sendStatus(204) : res.sendStatus(500);
+};
+
+export const deleteUser = async (req: Request, res: Response) => {
+  const uid = req.user.uid;
+  try {
+    const deletingSettings = deleteSettings(uid);
+    const deletingRecords = client.query(
+      `DELETE FROM record WHERE firebase_uid = $1 RETURNING *;`,
+      [uid]
+    );
+    const deletingAccounts = client.query(
+      `DELETE FROM account WHERE firebase_uid = $1 RETURNING *;`,
+      [uid]
+    );
+    await Promise.all([deletingSettings, deletingRecords, deletingAccounts]);
+    res.sendStatus(200);
+  } catch (err) {
+    console.error(err);
+    res.sendStatus(500);
+  }
 };
