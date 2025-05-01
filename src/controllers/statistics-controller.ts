@@ -8,6 +8,16 @@ export interface NetWorth {
   amount: number;
 }
 
+export interface NetWorthByCurrency {
+  primary_currency: number;
+  rows: {
+    currency_id: number;
+    amount: number;
+    amount_in_PC: number;
+    percentage: number;
+  }[];
+}
+
 export const getNetWorth = async (req: Request, res: Response) => {
   const accounts = await getDbAccounts(req.user.uid);
   if (!accounts) {
@@ -52,22 +62,58 @@ export const getNetWorth = async (req: Request, res: Response) => {
 
 export const getNetWorthByCurrency = async (req: Request, res: Response) => {
   const accounts = await getDbAccounts(req.user.uid);
-  if (!accounts) {
+  const primaryCurrency = await getPrimaryCurrency(req.user.uid);
+  const prices = await getLatestPrices();
+  const currencies = await getDbCurrencies();
+  if (!accounts || !primaryCurrency || !prices || !currencies) {
     res.sendStatus(500);
     return;
   }
 
-  const items: NetWorth[] = [];
+  const netWorthByCurrency: NetWorthByCurrency = {
+    primary_currency: primaryCurrency,
+    rows: [],
+  };
+  const { rows } = netWorthByCurrency;
 
-  const currencies = await getDbCurrencies();
   currencies.forEach((currency) => {
-    items.push({ currency_id: currency.id, amount: 0 });
+    rows.push({
+      currency_id: currency.id,
+      amount: 0,
+      amount_in_PC: 0,
+      percentage: 0,
+    });
   });
 
-  accounts.forEach((account) => {
-    const item = items.find((x) => x.currency_id === account.currency_id);
-    if (item) item.amount += parseFloat(account.balance);
+  const pricePC =
+    primaryCurrency === 1
+      ? 1
+      : prices.find((x) => x.currency_id === primaryCurrency).price;
+
+  const sumInPC = accounts.reduce((sum, current) => {
+    const row = rows.find((row) => row.currency_id === current.currency_id);
+    const price =
+      current.currency_id === 1
+        ? 1
+        : prices.find((x) => x.currency_id === current.currency_id).price;
+
+    if (!row) {
+      res.sendStatus(500);
+      return;
+    }
+    const amountInPC = (parseFloat(current.balance) / price) * pricePC;
+    row.amount += parseFloat(current.balance);
+    row.amount_in_PC += amountInPC;
+    return sum + amountInPC;
+  }, 0);
+
+  rows.forEach((row) => {
+    row.percentage = (row.amount_in_PC / sumInPC) * 100;
   });
 
-  res.json(items);
+  const nonZeroRows = rows.filter((x) => x.amount !== 0);
+  const sorted = nonZeroRows.sort((a, b) => b.amount_in_PC - a.amount_in_PC);
+  netWorthByCurrency.rows = sorted;
+
+  res.json(netWorthByCurrency);
 };
