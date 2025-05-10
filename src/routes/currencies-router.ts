@@ -1,29 +1,14 @@
-import express, { NextFunction, Request, Response } from 'express';
+import express from 'express';
 import {
   getCurrencies,
   getPrices,
 } from 'src/controllers/currencies-controller';
-import { containRequiredFields } from 'src/utils/validation';
+import validate from 'src/middlewares/validators';
+import { getPricesSchema } from 'src/schemas/currencySchemas';
 
 const currenciesRouter = express.Router();
 
-const validateQuery = (req: Request, res: Response, next: NextFunction) => {
-  const { from, to, currencyId } = req.query;
-  if (!containRequiredFields({ from, to, currencyId }, res)) return;
-
-  if (
-    typeof from !== 'string' ||
-    typeof to !== 'string' ||
-    typeof currencyId !== 'string'
-  ) {
-    res.status(400).json({ message: 'Invalid query values' });
-    return;
-  }
-
-  next();
-};
-
 currenciesRouter.get('/', getCurrencies);
-currenciesRouter.get('/prices', validateQuery, getPrices);
+currenciesRouter.get('/prices', validate(getPricesSchema), getPrices);
 
 export default currenciesRouter;

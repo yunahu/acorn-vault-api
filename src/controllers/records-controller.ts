@@ -1,32 +1,10 @@
 import { Request, Response } from 'express';
 import client from 'src/services/postgres';
-import { containRequiredFields, isEmptyString } from 'src/utils/validation';
-
-export const getRecords = async (req: Request, res: Response) => {
-  const { from, to } = req.query;
-
-  const query = `
-			SELECT id, date, description, account_id, amount 
-			FROM record 
-			WHERE 
-			firebase_uid = $1
-			AND ($2::date IS NULL OR date >= $2)
-			AND ($3::date IS NULL OR date <= $3)
-			ORDER BY date, id;
-		`;
-
-  const records = await client
-    .query(query, [req.user.uid, from, to])
-    .then((r) => r.rows);
-
-  res.send(records);
-};
+import { GetRecordsQuery } from 'src/schemas/recordSchemas';
+import { getDbRecords } from 'src/services/records';
 
 export const createRecord = async (req: Request, res: Response) => {
   const { date, description, accountId, amount } = req.body;
-  if (!containRequiredFields({ date, description }, res)) return;
-  if (!isEmptyString({ description }, res)) return;
-
   const newRecord = await client
     .query(
       `INSERT INTO record (date, description, account_id, amount, firebase_uid) VALUES ($1, $2, $3, $4, $5) RETURNING *;`,
@@ -37,36 +15,52 @@ export const createRecord = async (req: Request, res: Response) => {
   newRecord ? res.sendStatus(204) : res.sendStatus(500);
 };
 
+export const getRecords = async (
+  req: Request<void, void, void, GetRecordsQuery>,
+  res: Response
+) => {
+  const { from, to } = req.query;
+  const records = await getDbRecords(req.user.uid, from, to);
+  res.send(records);
+};
+
 export const updateRecord = async (req: Request, res: Response) => {
-  const { column, value } = req.body;
-  if (!containRequiredFields({ column }, res)) return;
-  if (column === 'description')
-    if (!isEmptyString({ description: value }, res)) return;
+  const { uid } = req.user;
+  const { id } = req.params;
+  const { date, description, account_id, amount } = req.body;
+  const items = { date, description, account_id, amount };
 
-  const updatable = ['date', 'description', 'account_id', 'amount'];
-  if (!updatable.includes(column)) {
-    res.status(400).json({
-      message: `'${column}' cannot be updated.`,
-    });
-    return;
-  }
-
-  const updatedRecord = await client
-    .query(`UPDATE record SET ${column} = $1 WHERE id = $2 RETURNING *;`, [
-      value,
-      req.params.id,
+  const record = await client
+    .query(`SELECT * FROM record WHERE id = $1 AND firebase_uid = $2;`, [
+      id,
+      uid,
     ])
     .then((r) => r.rows[0]);
 
-  updatedRecord ? res.sendStatus(204) : res.sendStatus(500);
+  if (!record) {
+    res.sendStatus(400);
+    return;
+  }
+
+  const promises = [];
+  for (const [key, value] of Object.entries(items)) {
+    if (value !== undefined && record[key] !== value) {
+      const q = `UPDATE record SET ${key} = $1 WHERE id = $2 AND firebase_uid = $3 RETURNING *;`;
+      promises.push(client.query(q, [value, id, uid]).then((r) => r.rows[0]));
+    }
+  }
+
+  Promise.all(promises)
+    .then(() => res.sendStatus(204))
+    .catch(() => res.sendStatus(500));
 };
 
 export const deleteRecord = async (req: Request, res: Response) => {
-  const id = req.params.id;
-  if (!containRequiredFields({ id }, res)) return;
-
   const deletedRecord = await client
-    .query(`DELETE FROM record WHERE id = $1 RETURNING *;`, [id])
+    .query(
+      `DELETE FROM record WHERE id = $1 AND firebase_uid = $2 RETURNING *;`,
+      [req.params.id, req.user.uid]
+    )
     .then((r) => r.rows[0]);
 
   deletedRecord ? res.sendStatus(204) : res.sendStatus(500);

@@ -5,12 +5,18 @@ import {
   updateAccount,
   deleteAccount,
 } from 'src/controllers/accounts-controller';
+import validate from 'src/middlewares/validators';
+import {
+  createAccountSchema,
+  updateAccountSchema,
+  deleteAccountSchema,
+} from 'src/schemas/accountSchemas';
 
 const accountsRouter = express.Router();
 
-accountsRouter.post('/', createAccount);
+accountsRouter.post('/', validate(createAccountSchema), createAccount);
 accountsRouter.get('/', getAccounts);
-accountsRouter.patch('/:id', updateAccount);
-accountsRouter.delete('/:id', deleteAccount);
+accountsRouter.patch('/:id', validate(updateAccountSchema), updateAccount);
+accountsRouter.delete('/:id', validate(deleteAccountSchema), deleteAccount);
 
 export default accountsRouter;

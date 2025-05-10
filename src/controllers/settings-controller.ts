@@ -1,7 +1,6 @@
 import { Request, Response } from 'express';
 import client from 'src/services/postgres';
 import { getDbSettings, deleteSettings } from 'src/services/settings';
-import { containRequiredFields } from 'src/utils/validation';
 
 export const getSettings = async (req: Request, res: Response) => {
   const settings = await getDbSettings(req.user.uid);
@@ -10,16 +9,17 @@ export const getSettings = async (req: Request, res: Response) => {
 };
 
 export const updateSettings = async (req: Request, res: Response) => {
-  const { column, value } = req.body;
-  if (!containRequiredFields({ column }, res)) return;
+  const { primary_currency } = req.body;
 
-  const updatable = ['primary_currency'];
-  if (!updatable.includes(column)) `'${column}' cannot be updated.`;
+  if (!primary_currency) {
+    res.sendStatus(204);
+    return;
+  }
 
   const updatedSettings = await client
     .query(
-      `UPDATE setting SET ${column} = $1 WHERE firebase_uid = $2 RETURNING *;`,
-      [value, req.user.uid]
+      `UPDATE setting SET primary_currency = $1 WHERE firebase_uid = $2 RETURNING *;`,
+      [primary_currency, req.user.uid]
     )
     .then((r) => r.rows[0]);
 

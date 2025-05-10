@@ -20,7 +20,7 @@ CREATE TABLE
 	record (
 		id SMALLSERIAL PRIMARY KEY,
 		"date" DATE NOT NULL,
-		description VARCHAR(255) NOT NULL,
+		description VARCHAR(255),
 		account_id SMALLINT REFERENCES account (id) ON DELETE SET NULL,
 		amount DECIMAL(12, 2) DEFAULT 0,
 		firebase_uid VARCHAR NOT NULL

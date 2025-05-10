@@ -4,7 +4,7 @@ import currenciesRouter from './currencies-router';
 import recordsRouter from './records-router';
 import settingsRouter from './settings-router';
 import statisticsRouter from './statistics-router';
-import { authenticate } from 'src/middlewares/authenticate';
+import { authenticate } from 'src/middlewares/authenticators';
 
 const router = express.Router();
 
