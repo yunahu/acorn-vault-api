@@ -20,7 +20,7 @@ export const updateRecordSchema = {
   body: z.object({
     date: z.string().datetime().optional(),
     description: z.string().optional(),
-    account_id: z.number().int().positive().optional(),
+    account_id: z.number().int().positive().nullable().optional(),
     amount: z.number().optional(),
   }),
 };
