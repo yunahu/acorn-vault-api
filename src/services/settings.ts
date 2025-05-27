@@ -23,7 +23,7 @@ export const getDbSettings = async (uid: string) => {
   return settings;
 };
 
-export const getPrimaryCurrency = async (uid: string) =>
+export const getPrimaryCurrencyId = async (uid: string) =>
   getDbSettings(uid).then((x) => x?.primary_currency);
 
 export const deleteSettings = (uid: string) =>

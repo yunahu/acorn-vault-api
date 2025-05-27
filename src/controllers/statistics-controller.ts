@@ -3,7 +3,7 @@ import { getRecordStatsQuery } from 'src/schemas/statisticsSchemas';
 import { getDbAccounts } from 'src/services/accounts';
 import { getDbCurrencies, getLatestPrices } from 'src/services/currencies';
 import { getDbRecordsWithAccounts } from 'src/services/records';
-import { getPrimaryCurrency } from 'src/services/settings';
+import { getPrimaryCurrencyId } from 'src/services/settings';
 
 export interface NetWorth {
   currency_id: number;
@@ -23,6 +23,7 @@ export interface NetWorthByCurrency {
 export interface RecordStats {
   primary_currency: number;
   currencyUnassigned: number;
+  assignedSum: number;
   rows: {
     currency_id: number;
     amount: number;
@@ -38,7 +39,7 @@ export const getNetWorth = async (req: Request, res: Response) => {
     return;
   }
 
-  const primaryCurrency = await getPrimaryCurrency(req.user.uid);
+  const primaryCurrency = await getPrimaryCurrencyId(req.user.uid);
 
   if (!accounts.length) {
     res.json({
@@ -75,7 +76,7 @@ export const getNetWorth = async (req: Request, res: Response) => {
 
 export const getNetWorthByCurrency = async (req: Request, res: Response) => {
   const accounts = await getDbAccounts(req.user.uid);
-  const primaryCurrency = await getPrimaryCurrency(req.user.uid);
+  const primaryCurrency = await getPrimaryCurrencyId(req.user.uid);
   const prices = await getLatestPrices();
   const currencies = await getDbCurrencies();
   if (!accounts || !primaryCurrency || !prices || !currencies) {
@@ -141,7 +142,7 @@ export const getRecordStats = async (
 
   const records = await getDbRecordsWithAccounts(req.user.uid, from, to);
 
-  const primaryCurrency = await getPrimaryCurrency(req.user.uid);
+  const primaryCurrency = await getPrimaryCurrencyId(req.user.uid);
   const prices = await getLatestPrices();
   const currencies = await getDbCurrencies();
   if (!records || !primaryCurrency || !prices || !currencies) {
@@ -153,6 +154,7 @@ export const getRecordStats = async (
   const recordStats: RecordStats = {
     primary_currency: primaryCurrency,
     currencyUnassigned: 0,
+    assignedSum: 0,
     rows: [],
   };
   const { rows } = recordStats;
@@ -202,6 +204,7 @@ export const getRecordStats = async (
   const nonZeroRows = rows.filter((x) => x.amount !== 0);
   const sorted = nonZeroRows.sort((a, b) => b.amount_in_PC - a.amount_in_PC);
   recordStats.rows = sorted;
+  recordStats.assignedSum = sumInPC;
 
   res.json(recordStats);
 };
