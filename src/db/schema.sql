@@ -39,3 +39,13 @@ CREATE TABLE
 		firebase_uid TEXT UNIQUE NOT NULL,
 		primary_currency SMALLINT REFERENCES currency (id) DEFAULT 1
 	);
+
+CREATE TABLE
+	coin (
+		id SMALLSERIAL PRIMARY KEY,
+		name TEXT NOT NULL,
+		symbol TEXT NOT NULL,
+		decimals SMALLINT NOT NULL,
+		address TEXT,
+		coingecko_api_id TEXT NOT NULL,
+	);

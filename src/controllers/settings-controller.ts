@@ -5,7 +5,7 @@ import { getDbSettings, deleteSettings } from 'src/services/settings';
 export const getSettings = async (req: Request, res: Response) => {
   const settings = await getDbSettings(req.user.uid);
 
-  settings ? res.send(settings) : res.sendStatus(500);
+  settings ? res.json(settings) : res.sendStatus(500);
 };
 
 export const updateSettings = async (req: Request, res: Response) => {

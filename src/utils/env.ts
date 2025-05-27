@@ -7,6 +7,7 @@ interface Environment {
   PG_HOST: string;
   PG_PORT: number;
   PG_DB: string;
+  COINGECKO_API_KEY: string;
 }
 
 const env: Environment = {
@@ -16,6 +17,7 @@ const env: Environment = {
   PG_HOST: process.env.PG_HOST!,
   PG_PORT: parseInt(process.env.PG_PORT ?? '5432'),
   PG_DB: process.env.PG_DB!,
+  COINGECKO_API_KEY: process.env.COINGECKO_API_KEY!,
 };
 
 export default env;

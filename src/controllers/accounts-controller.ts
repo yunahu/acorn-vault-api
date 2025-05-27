@@ -16,7 +16,7 @@ export const createAccount = async (req: Request, res: Response) => {
 
 export const getAccounts = async (req: Request, res: Response) => {
   const accounts = await getDbAccounts(req.user.uid);
-  res.send(accounts);
+  res.json(accounts);
 };
 
 export const updateAccount = async (req: Request, res: Response) => {

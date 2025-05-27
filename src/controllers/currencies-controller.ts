@@ -4,7 +4,7 @@ import { getDbCurrencies, getDbPrices } from 'src/services/currencies';
 
 export const getCurrencies = async (_: Request, res: Response) => {
   const currencies = await getDbCurrencies();
-  res.send(currencies);
+  res.json(currencies);
 };
 
 export const getPrices = async (
@@ -13,5 +13,5 @@ export const getPrices = async (
 ) => {
   const { from, to, currencyId } = req.query;
   const prices = await getDbPrices(from, to, currencyId);
-  res.send(prices);
+  res.json(prices);
 };

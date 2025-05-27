@@ -21,7 +21,7 @@ export const getRecords = async (
 ) => {
   const { from, to } = req.query;
   const records = await getDbRecords(req.user.uid, from, to);
-  res.send(records);
+  res.json(records);
 };
 
 export const updateRecord = async (req: Request, res: Response) => {
