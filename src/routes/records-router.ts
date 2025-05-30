@@ -1,16 +1,16 @@
 import express from 'express';
 import {
   createRecord,
+  deleteRecord,
   getRecords,
   updateRecord,
-  deleteRecord,
 } from 'src/controllers/records-controller';
 import validate from 'src/middlewares/validators';
 import {
   createRecordSchema,
+  deleteRecordSchema,
   getRecordsSchema,
   updateRecordSchema,
-  deleteRecordSchema,
 } from 'src/schemas/recordSchemas';
 
 const recordsRouter = express.Router();

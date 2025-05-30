@@ -1,15 +1,15 @@
 import express from 'express';
 import {
   createAccount,
+  deleteAccount,
   getAccounts,
   updateAccount,
-  deleteAccount,
 } from 'src/controllers/accounts-controller';
 import validate from 'src/middlewares/validators';
 import {
   createAccountSchema,
-  updateAccountSchema,
   deleteAccountSchema,
+  updateAccountSchema,
 } from 'src/schemas/accountSchemas';
 
 const accountsRouter = express.Router();

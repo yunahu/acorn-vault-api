@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
-import client from 'src/services/postgres';
 import { getDbAccounts } from 'src/services/accounts';
+import client from 'src/services/postgres';
 
 export const createAccount = async (req: Request, res: Response) => {
   const { name, currencyId, balance, isPrimaryPaymentMethod } = req.body;

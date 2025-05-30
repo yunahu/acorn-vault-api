@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
-import client from 'src/services/postgres';
 import { GetRecordsQuery } from 'src/schemas/recordSchemas';
+import client from 'src/services/postgres';
 import { getDbRecords } from 'src/services/records';
 
 export const createRecord = async (req: Request, res: Response) => {

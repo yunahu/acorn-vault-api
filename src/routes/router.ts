@@ -1,11 +1,11 @@
 import express from 'express';
+import { authenticate } from 'src/middlewares/authenticators';
 import accountsRouter from './accounts-router';
 import cryptoRouter from './crypto-router';
 import currenciesRouter from './currencies-router';
 import recordsRouter from './records-router';
 import settingsRouter from './settings-router';
 import statisticsRouter from './statistics-router';
-import { authenticate } from 'src/middlewares/authenticators';
 
 const router = express.Router();
 

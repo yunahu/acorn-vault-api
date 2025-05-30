@@ -1,8 +1,8 @@
 import express from 'express';
 import {
+  deleteUser,
   getSettings,
   updateSettings,
-  deleteUser,
 } from 'src/controllers/settings-controller';
 import validate from 'src/middlewares/validators';
 import { updateSettingsSchema } from 'src/schemas/settingsSchemas';
