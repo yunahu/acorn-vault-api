@@ -4,9 +4,9 @@ export const createAccountSchema = {
   body: z
     .object({
       name: z.string().min(1),
-      currencyId: z.number().int().positive(),
+      currency_id: z.number().int().positive(),
       balance: z.number().optional(),
-      isPrimaryPaymentMethod: z.boolean().optional(),
+      is_primary_payment_method: z.boolean().optional(),
     })
     .superRefine(({ name }, ctx) => {
       if (name && name.trim() === '') {

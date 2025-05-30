@@ -3,11 +3,11 @@ import { getDbAccounts } from 'src/services/accounts';
 import client from 'src/services/postgres';
 
 export const createAccount = async (req: Request, res: Response) => {
-  const { name, currencyId, balance, isPrimaryPaymentMethod } = req.body;
+  const { name, currency_id, balance, is_primary_payment_method } = req.body;
   const newAccount = await client
     .query(
       `INSERT INTO account (name, currency_id, balance, is_primary_payment_method, firebase_uid) VALUES ($1, $2, $3, $4, $5) RETURNING *;`,
-      [name, currencyId, balance, isPrimaryPaymentMethod, req.user.uid]
+      [name, currency_id, balance, is_primary_payment_method, req.user.uid]
     )
     .then((r) => r.rows[0]);
 

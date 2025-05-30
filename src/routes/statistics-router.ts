@@ -9,10 +9,10 @@ import { getRecordStatsSchema } from 'src/schemas/statisticsSchemas';
 
 const statisticsRouter = express.Router();
 
-statisticsRouter.get('/netWorth', getNetWorth);
-statisticsRouter.get('/netWorthByCurrency', getNetWorthByCurrency);
+statisticsRouter.get('/net_worth', getNetWorth);
+statisticsRouter.get('/net_worth_by_currency', getNetWorthByCurrency);
 statisticsRouter.get(
-  '/recordStats',
+  '/record_stats',
   validate(getRecordStatsSchema),
   getRecordStats
 );

@@ -4,11 +4,11 @@ import client from 'src/services/postgres';
 import { getDbRecords } from 'src/services/records';
 
 export const createRecord = async (req: Request, res: Response) => {
-  const { date, description, accountId, amount } = req.body;
+  const { date, description, account_id, amount } = req.body;
   const newRecord = await client
     .query(
       `INSERT INTO record (date, description, account_id, amount, firebase_uid) VALUES ($1, $2, $3, $4, $5) RETURNING *;`,
-      [date, description, accountId, amount, req.user.uid]
+      [date, description, account_id, amount, req.user.uid]
     )
     .then((r) => r.rows[0]);
 

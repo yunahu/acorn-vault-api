@@ -8,11 +8,8 @@ interface CoingeckoResponse {
   };
 }
 
-interface CoinPrices {
-  currency: { code: string; symbol: string };
-  prices: {
-    [coingecko_api_id: string]: number;
-  };
+interface Prices {
+  [coingecko_api_id: string]: number;
 }
 
 export const getCoingeckoPrices = async (currencyCode: string) => {
@@ -34,12 +31,12 @@ export const getCoingeckoPrices = async (currencyCode: string) => {
     .then((x) => x.data)
     .catch((err) => console.error(err));
 
-  const prices: CoinPrices['prices'] = {};
+  if (!coingeckoPrices) return;
+
+  const prices: Prices = {};
 
   coinIds.forEach((coin) => {
-    if (coingeckoPrices) {
-      prices[coin] = coingeckoPrices[coin][currencyCode.toLowerCase()];
-    }
+    prices[coin] = coingeckoPrices[coin][currencyCode.toLowerCase()];
   });
 
   return prices;

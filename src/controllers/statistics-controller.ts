@@ -22,8 +22,8 @@ export interface NetWorthByCurrency {
 
 export interface RecordStats {
   primary_currency: number;
-  currencyUnassigned: number;
-  assignedSum: number;
+  currency_unassigned: number;
+  assigned_sum: number;
   rows: {
     currency_id: number;
     amount: number;
@@ -153,8 +153,8 @@ export const getRecordStats = async (
 
   const recordStats: RecordStats = {
     primary_currency: primaryCurrency,
-    currencyUnassigned: 0,
-    assignedSum: 0,
+    currency_unassigned: 0,
+    assigned_sum: 0,
     rows: [],
   };
   const { rows } = recordStats;
@@ -176,7 +176,7 @@ export const getRecordStats = async (
   let sumInPC = 0;
   for (const current of records) {
     if (current.currency_id === null) {
-      recordStats.currencyUnassigned += parseFloat(current.amount);
+      recordStats.currency_unassigned += parseFloat(current.amount);
       continue;
     }
 
@@ -204,7 +204,7 @@ export const getRecordStats = async (
   const nonZeroRows = rows.filter((x) => x.amount !== 0);
   const sorted = nonZeroRows.sort((a, b) => b.amount_in_PC - a.amount_in_PC);
   recordStats.rows = sorted;
-  recordStats.assignedSum = sumInPC;
+  recordStats.assigned_sum = sumInPC;
 
   res.json(recordStats);
 };

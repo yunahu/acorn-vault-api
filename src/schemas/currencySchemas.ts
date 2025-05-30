@@ -4,7 +4,7 @@ export const getPricesSchema = {
   query: z.object({
     from: z.string().date(),
     to: z.string().date(),
-    currencyId: z.coerce.number().int().positive(),
+    currency_id: z.coerce.number().int().positive(),
   }),
 };
 

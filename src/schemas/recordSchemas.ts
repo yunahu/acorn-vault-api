@@ -4,7 +4,7 @@ export const createRecordSchema = {
   body: z.object({
     date: z.string().datetime(),
     description: z.string().optional(),
-    currencyId: z.number().int().positive().optional(),
+    currency_id: z.number().int().positive().optional(),
     amount: z.number().optional(),
   }),
 };
