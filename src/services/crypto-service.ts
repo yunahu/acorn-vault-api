@@ -1,6 +1,8 @@
 import axios from 'axios';
+import { Currency } from 'src/services/currencies-service';
+import client from 'src/services/postgres-service';
+import { getPrimaryCurrency } from 'src/services/user-service';
 import env from 'src/utils/env';
-import client from './postgres';
 
 interface CoingeckoResponse {
   [coingecko_api_id: string]: {
@@ -12,9 +14,12 @@ interface Prices {
   [coingecko_api_id: string]: number;
 }
 
-export const getCoingeckoPrices = async (currencyCode: string) => {
+export const getCoins = () =>
+  client.query(`SELECT * FROM coin`).then((r) => r.rows);
+
+const getCoingeckoPrices = async (currencyCode: string) => {
   const coinIds: string[] = await client
-    .query(`SELECT coingecko_api_id FROM coin;`)
+    .query(`SELECT coingecko_api_id FROM coin`)
     .then((r) => r.rows.map((x) => x.coingecko_api_id));
 
   const options = {
@@ -40,4 +45,11 @@ export const getCoingeckoPrices = async (currencyCode: string) => {
   });
 
   return prices;
+};
+
+export const getCoinPrices = async (uid: string) => {
+  const primaryCurrency: Currency = await getPrimaryCurrency(uid);
+  const prices = await getCoingeckoPrices(primaryCurrency.code.toLowerCase());
+
+  return prices ? { currency: primaryCurrency, prices } : undefined;
 };

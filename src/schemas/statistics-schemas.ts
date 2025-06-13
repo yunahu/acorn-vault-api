@@ -1,3 +1,4 @@
+import { Request } from 'express';
 import { z } from 'zod';
 
 export const getRecordStatsSchema = {
@@ -7,4 +8,9 @@ export const getRecordStatsSchema = {
   }),
 };
 
-export type getRecordStatsQuery = z.infer<typeof getRecordStatsSchema.query>;
+export type GetRecordStatsRequest = Request<
+  void,
+  void,
+  void,
+  z.infer<typeof getRecordStatsSchema.query>
+>;

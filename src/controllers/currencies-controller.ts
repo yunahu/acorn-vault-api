@@ -1,17 +1,14 @@
 import { Request, Response } from 'express';
-import { GetPricesQuery } from 'src/schemas/currencySchemas';
-import { getDbCurrencies, getDbPrices } from 'src/services/currencies';
+import { GetPricesRequest } from 'src/schemas/currencies-schemas';
+import * as currenciesService from 'src/services/currencies-service';
 
 export const getCurrencies = async (_: Request, res: Response) => {
-  const currencies = await getDbCurrencies();
+  const currencies = await currenciesService.getCurrencies();
   res.json(currencies);
 };
 
-export const getPrices = async (
-  req: Request<void, void, void, GetPricesQuery>,
-  res: Response
-) => {
+export const getPrices = async (req: GetPricesRequest, res: Response) => {
   const { from, to, currency_id } = req.query;
-  const prices = await getDbPrices(from, to, currency_id);
+  const prices = await currenciesService.getPrices(from, to, currency_id);
   res.json(prices);
 };

@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
-import { auth } from 'src/services/firebase';
+import { auth } from 'src/services/firebase-service';
 
 export const authenticate = async (
   req: Request,
@@ -25,3 +25,5 @@ export const authenticate = async (
 
   next();
 };
+
+export default authenticate;

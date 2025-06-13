@@ -11,7 +11,7 @@ import {
   deleteRecordSchema,
   getRecordsSchema,
   updateRecordSchema,
-} from 'src/schemas/recordSchemas';
+} from 'src/schemas/records-schemas';
 
 const recordsRouter = express.Router();
 

@@ -4,7 +4,7 @@ import {
   getPrices,
 } from 'src/controllers/currencies-controller';
 import validate from 'src/middlewares/validators';
-import { getPricesSchema } from 'src/schemas/currencySchemas';
+import { getPricesSchema } from 'src/schemas/currencies-schemas';
 
 const currenciesRouter = express.Router();
 

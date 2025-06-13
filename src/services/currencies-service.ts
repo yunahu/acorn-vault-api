@@ -1,7 +1,7 @@
 import axios from 'axios';
-import client from 'src/services/postgres';
+import client from 'src/services/postgres-service';
 
-interface Currency {
+export interface Currency {
   id: number;
   code: string;
   symbol: string;
@@ -14,10 +14,10 @@ interface Rates {
   };
 }
 
-export const getDbCurrencies = async () =>
+export const getCurrencies = () =>
   client.query(`SELECT * FROM currency`).then((r) => r.rows);
 
-export const getDbCurrencyById = (currencyId: string | number) =>
+export const getCurrencyById = (currencyId: string | number) =>
   client
     .query(`SELECT * FROM currency WHERE id = $1`, [currencyId])
     .then((r) => r.rows[0] as Currency);
@@ -38,7 +38,7 @@ const updatePrices = async (
   to: string,
   currencyId: string | number
 ) => {
-  const currency = await getDbCurrencyById(currencyId);
+  const currency = await getCurrencyById(currencyId);
   if (!currency) throw new Error('Invalid currency id');
 
   const rates = await getApiPrices(from, to, currency.code);
@@ -64,10 +64,10 @@ const updatePrices = async (
   return reformatted;
 };
 
-export const getDbPrices = async (
+export const getPrices = async (
   from: string,
   to: string,
-  currencyId: string | number
+  currencyId: number
 ) => {
   const prices = await client
     .query(
@@ -85,6 +85,6 @@ export const getLatestPrices = async () =>
     .query(
       `SELECT DISTINCT ON (currency_id) currency_id, price
 			FROM price
-			ORDER BY currency_id, date DESC;`
+			ORDER BY currency_id, date DESC`
     )
     .then((r) => r.rows);

@@ -1,16 +1,14 @@
 import express from 'express';
 import {
-  getNetWorth,
-  getNetWorthByCurrency,
+  getAccountStats,
   getRecordStats,
 } from 'src/controllers/statistics-controller';
 import validate from 'src/middlewares/validators';
-import { getRecordStatsSchema } from 'src/schemas/statisticsSchemas';
+import { getRecordStatsSchema } from 'src/schemas/statistics-schemas';
 
 const statisticsRouter = express.Router();
 
-statisticsRouter.get('/net_worth', getNetWorth);
-statisticsRouter.get('/net_worth_by_currency', getNetWorthByCurrency);
+statisticsRouter.get('/account_stats', getAccountStats);
 statisticsRouter.get(
   '/record_stats',
   validate(getRecordStatsSchema),

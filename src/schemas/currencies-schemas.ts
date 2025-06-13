@@ -1,3 +1,4 @@
+import { Request } from 'express';
 import { z } from 'zod';
 
 export const getPricesSchema = {
@@ -8,4 +9,9 @@ export const getPricesSchema = {
   }),
 };
 
-export type GetPricesQuery = z.infer<typeof getPricesSchema.query>;
+export type GetPricesRequest = Request<
+  void,
+  void,
+  void,
+  z.infer<typeof getPricesSchema.query>
+>;

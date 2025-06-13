@@ -4,7 +4,7 @@ import utc from 'dayjs/plugin/utc';
 import express from 'express';
 import logger from 'morgan';
 import routes from 'src/routes/router';
-import client from 'src/services/postgres';
+import client from 'src/services/postgres-service';
 import env from 'src/utils/env';
 
 dayjs.extend(utc);

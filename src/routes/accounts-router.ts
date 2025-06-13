@@ -10,7 +10,7 @@ import {
   createAccountSchema,
   deleteAccountSchema,
   updateAccountSchema,
-} from 'src/schemas/accountSchemas';
+} from 'src/schemas/accounts-schemas';
 
 const accountsRouter = express.Router();
 
