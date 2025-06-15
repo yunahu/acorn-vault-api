@@ -48,7 +48,7 @@ export const updateAccount = async (
 
   account = { ...account, ...data };
 
-  const q = `UPDATE record 
+  const q = `UPDATE account 
 		SET name = $1, balance = $2, is_primary_payment_method = $3
 		WHERE id = $4 
 		AND firebase_uid = $5 
