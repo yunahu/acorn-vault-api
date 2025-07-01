@@ -6,27 +6,34 @@ import {
 import { getRecordsWithAccounts } from 'src/services/records-service';
 import { getPrimaryCurrencyId } from 'src/services/user-service';
 
+export interface BreakdownItem {
+  amount: number;
+  amount_in_PC: number; // amount in user's primary currency
+  percentage: number;
+}
+
+export interface CurrencyBreakdownItem extends BreakdownItem {
+  currency_id: number;
+}
+
 export interface AccountStats {
   primary_currency: number;
   net_worth: number;
-  rows: {
-    currency_id: number;
-    amount: number;
-    amount_in_PC: number;
-    percentage: number;
-  }[];
+  assets: {
+    sum: number;
+    currency_breakdown: CurrencyBreakdownItem[];
+  };
+  liabilities: {
+    sum: number;
+    currency_breakdown: CurrencyBreakdownItem[];
+  };
 }
 
 export interface RecordStats {
   primary_currency: number;
+  sum: number;
   currency_unassigned: number;
-  assigned_sum: number;
-  rows: {
-    currency_id: number;
-    amount: number;
-    amount_in_PC: number;
-    percentage: number;
-  }[];
+  currency_breakdown: CurrencyBreakdownItem[];
 }
 
 export const getAccountStats = async (uid: string) => {
@@ -40,17 +47,29 @@ export const getAccountStats = async (uid: string) => {
 
   const accountStats: AccountStats = {
     primary_currency: primaryCurrencyId,
+    assets: {
+      sum: 0,
+      currency_breakdown: [],
+    },
+    liabilities: {
+      sum: 0,
+      currency_breakdown: [],
+    },
     net_worth: 0,
-    rows: [],
   };
-  const { rows } = accountStats;
+
+  const { assets, liabilities } = accountStats;
+
+  const assetsAndLiabilities = [assets, liabilities];
 
   currencies.forEach((currency) => {
-    rows.push({
-      currency_id: currency.id,
-      amount: 0,
-      amount_in_PC: 0,
-      percentage: 0,
+    assetsAndLiabilities.forEach((x) => {
+      x.currency_breakdown.push({
+        currency_id: currency.id,
+        amount: 0,
+        amount_in_PC: 0,
+        percentage: 0,
+      });
     });
   });
 
@@ -59,10 +78,13 @@ export const getAccountStats = async (uid: string) => {
       ? 1
       : prices.find((x) => x.currency_id === primaryCurrencyId).price;
 
-  let sumInPC = 0;
   for (const current of accounts) {
-    const row = rows.find((row) => row.currency_id === current.currency_id);
-    if (!row) return;
+    const item = (
+      current.balance < 0 ? liabilities : assets
+    ).currency_breakdown.find(
+      (item) => item.currency_id === current.currency_id
+    );
+    if (!item) return;
 
     const price =
       current.currency_id === 1
@@ -70,19 +92,34 @@ export const getAccountStats = async (uid: string) => {
         : prices.find((x) => x.currency_id === current.currency_id).price;
 
     const amountInPC = (parseFloat(current.balance) / price) * pricePC;
-    row.amount += parseFloat(current.balance);
-    row.amount_in_PC += amountInPC;
-    sumInPC += amountInPC;
+    item.amount += parseFloat(current.balance);
+    item.amount_in_PC += amountInPC;
+    (current.balance < 0 ? liabilities : assets).sum += amountInPC;
   }
 
-  rows.forEach((row) => {
-    row.percentage = (row.amount_in_PC / sumInPC) * 100;
-  });
+  assetsAndLiabilities.forEach((x) => {
+    if (x.sum === 0) return;
 
-  const nonZeroRows = rows.filter((x) => x.amount !== 0);
-  const sorted = nonZeroRows.sort((a, b) => b.amount_in_PC - a.amount_in_PC);
-  accountStats.rows = sorted;
-  accountStats.net_worth = sumInPC;
+    x.currency_breakdown.forEach((item) => {
+      item.percentage = (item.amount_in_PC / x.sum) * 100;
+    });
+
+    const orderDescending = (
+      a: CurrencyBreakdownItem,
+      b: CurrencyBreakdownItem
+    ) => b.amount_in_PC - a.amount_in_PC;
+    const orderAscending = (
+      a: CurrencyBreakdownItem,
+      b: CurrencyBreakdownItem
+    ) => a.amount_in_PC - b.amount_in_PC;
+
+    const nonZeroItems = x.currency_breakdown.filter((k) => k.amount !== 0);
+    const sorted = nonZeroItems.sort(
+      x.sum > 0 ? orderDescending : orderAscending
+    );
+    x.currency_breakdown = sorted;
+  });
+  accountStats.net_worth = assets.sum + liabilities.sum;
 
   return accountStats;
 };
@@ -103,14 +140,15 @@ export const getRecordStats = async (
 
   const recordStats: RecordStats = {
     primary_currency: primaryCurrency,
+    sum: 0,
     currency_unassigned: 0,
-    assigned_sum: 0,
-    rows: [],
+    currency_breakdown: [],
   };
-  const { rows } = recordStats;
+
+  const { currency_breakdown } = recordStats;
 
   currencies.forEach((currency) => {
-    rows.push({
+    currency_breakdown.push({
       currency_id: currency.id,
       amount: 0,
       amount_in_PC: 0,
@@ -130,8 +168,10 @@ export const getRecordStats = async (
       continue;
     }
 
-    const row = rows.find((row) => row.currency_id === current.currency_id);
-    if (!row) return;
+    const item = currency_breakdown.find(
+      (item) => item.currency_id === current.currency_id
+    );
+    if (!item) return;
 
     const price =
       current.currency_id === 1
@@ -139,19 +179,21 @@ export const getRecordStats = async (
         : prices.find((x) => x.currency_id === current.currency_id).price;
 
     const amountInPC = (parseFloat(current.amount) / price) * pricePC;
-    row.amount += parseFloat(current.amount);
-    row.amount_in_PC += amountInPC;
+    item.amount += parseFloat(current.amount);
+    item.amount_in_PC += amountInPC;
     sumInPC += amountInPC;
   }
 
-  rows.forEach((row) => {
-    row.percentage = row.currency_id ? (row.amount_in_PC / sumInPC) * 100 : 0;
+  currency_breakdown.forEach((item) => {
+    item.percentage = item.currency_id
+      ? (item.amount_in_PC / sumInPC) * 100
+      : 0;
   });
 
-  const nonZeroRows = rows.filter((x) => x.amount !== 0);
-  const sorted = nonZeroRows.sort((a, b) => b.amount_in_PC - a.amount_in_PC);
-  recordStats.rows = sorted;
-  recordStats.assigned_sum = sumInPC;
+  const nonZeroItems = currency_breakdown.filter((x) => x.amount !== 0);
+  const sorted = nonZeroItems.sort((a, b) => b.amount_in_PC - a.amount_in_PC);
+  recordStats.currency_breakdown = sorted;
+  recordStats.sum = sumInPC;
 
   return recordStats;
 };
