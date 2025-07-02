@@ -6,35 +6,41 @@ import {
 import { getRecordsWithAccounts } from 'src/services/records-service';
 import { getPrimaryCurrencyId } from 'src/services/user-service';
 
-export interface BreakdownItem {
+interface BreakdownItem {
   amount: number;
   amount_in_PC: number; // amount in user's primary currency
   percentage: number;
 }
 
-export interface CurrencyBreakdownItem extends BreakdownItem {
+interface CurrencyBreakdownItem extends BreakdownItem {
   currency_id: number;
+}
+
+interface StatItem {
+  sum: number;
+  currency_breakdown: CurrencyBreakdownItem[];
 }
 
 export interface AccountStats {
   primary_currency: number;
   net_worth: number;
-  assets: {
-    sum: number;
-    currency_breakdown: CurrencyBreakdownItem[];
-  };
-  liabilities: {
-    sum: number;
-    currency_breakdown: CurrencyBreakdownItem[];
-  };
+  assets: StatItem;
+  liabilities: StatItem;
 }
 
 export interface RecordStats {
   primary_currency: number;
   sum: number;
   currency_unassigned: number;
-  currency_breakdown: CurrencyBreakdownItem[];
+  income_items: StatItem;
+  expense_items: StatItem;
 }
+
+const orderAscending = (a: BreakdownItem, b: BreakdownItem) =>
+  a.amount_in_PC - b.amount_in_PC;
+
+const orderDescending = (a: BreakdownItem, b: BreakdownItem) =>
+  b.amount_in_PC - a.amount_in_PC;
 
 export const getAccountStats = async (uid: string) => {
   const accounts = await getAccounts(uid);
@@ -98,20 +104,14 @@ export const getAccountStats = async (uid: string) => {
   }
 
   assetsAndLiabilities.forEach((x) => {
-    if (x.sum === 0) return;
+    if (x.sum === 0) {
+      x.currency_breakdown = [];
+      return;
+    }
 
     x.currency_breakdown.forEach((item) => {
       item.percentage = (item.amount_in_PC / x.sum) * 100;
     });
-
-    const orderDescending = (
-      a: CurrencyBreakdownItem,
-      b: CurrencyBreakdownItem
-    ) => b.amount_in_PC - a.amount_in_PC;
-    const orderAscending = (
-      a: CurrencyBreakdownItem,
-      b: CurrencyBreakdownItem
-    ) => a.amount_in_PC - b.amount_in_PC;
 
     const nonZeroItems = x.currency_breakdown.filter((k) => k.amount !== 0);
     const sorted = nonZeroItems.sort(
@@ -142,17 +142,27 @@ export const getRecordStats = async (
     primary_currency: primaryCurrency,
     sum: 0,
     currency_unassigned: 0,
-    currency_breakdown: [],
+    income_items: {
+      sum: 0,
+      currency_breakdown: [],
+    },
+    expense_items: {
+      sum: 0,
+      currency_breakdown: [],
+    },
   };
 
-  const { currency_breakdown } = recordStats;
+  const { income_items, expense_items } = recordStats;
+  const incomeAndExpenseItems = [income_items, expense_items];
 
   currencies.forEach((currency) => {
-    currency_breakdown.push({
-      currency_id: currency.id,
-      amount: 0,
-      amount_in_PC: 0,
-      percentage: 0,
+    incomeAndExpenseItems.forEach((x) => {
+      x.currency_breakdown.push({
+        currency_id: currency.id,
+        amount: 0,
+        amount_in_PC: 0,
+        percentage: 0,
+      });
     });
   });
 
@@ -161,14 +171,17 @@ export const getRecordStats = async (
       ? 1
       : prices.find((x) => x.currency_id === primaryCurrency).price;
 
-  let sumInPC = 0;
   for (const current of records) {
     if (current.currency_id === null) {
       recordStats.currency_unassigned += parseFloat(current.amount);
       continue;
     }
 
-    const item = currency_breakdown.find(
+    if (current.amount === 0) continue;
+
+    const item = (
+      current.amount > 0 ? income_items : expense_items
+    ).currency_breakdown.find(
       (item) => item.currency_id === current.currency_id
     );
     if (!item) return;
@@ -181,19 +194,26 @@ export const getRecordStats = async (
     const amountInPC = (parseFloat(current.amount) / price) * pricePC;
     item.amount += parseFloat(current.amount);
     item.amount_in_PC += amountInPC;
-    sumInPC += amountInPC;
+    (current.amount > 0 ? income_items : expense_items).sum += amountInPC;
   }
 
-  currency_breakdown.forEach((item) => {
-    item.percentage = item.currency_id
-      ? (item.amount_in_PC / sumInPC) * 100
-      : 0;
-  });
+  incomeAndExpenseItems.forEach((x) => {
+    if (x.sum === 0) {
+      x.currency_breakdown = [];
+      return;
+    }
 
-  const nonZeroItems = currency_breakdown.filter((x) => x.amount !== 0);
-  const sorted = nonZeroItems.sort((a, b) => b.amount_in_PC - a.amount_in_PC);
-  recordStats.currency_breakdown = sorted;
-  recordStats.sum = sumInPC;
+    x.currency_breakdown.forEach((item) => {
+      item.percentage = (item.amount_in_PC / x.sum) * 100;
+    });
+
+    const nonZeroItems = x.currency_breakdown.filter((k) => k.amount !== 0);
+    const sorted = nonZeroItems.sort(
+      x.sum > 0 ? orderDescending : orderAscending
+    );
+    x.currency_breakdown = sorted;
+  });
+  recordStats.sum = income_items.sum + expense_items.sum;
 
   return recordStats;
 };
