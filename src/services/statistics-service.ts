@@ -18,6 +18,7 @@ interface CurrencyBreakdownItem extends BreakdownItem {
 
 interface StatItem {
   sum: number;
+  currency_unassigned_sum?: number;
   currency_breakdown: CurrencyBreakdownItem[];
 }
 
@@ -31,7 +32,6 @@ export interface AccountStats {
 export interface RecordStats {
   primary_currency: number;
   sum: number;
-  currency_unassigned: number;
   income_items: StatItem;
   expense_items: StatItem;
 }
@@ -141,13 +141,14 @@ export const getRecordStats = async (
   const recordStats: RecordStats = {
     primary_currency: primaryCurrency,
     sum: 0,
-    currency_unassigned: 0,
     income_items: {
       sum: 0,
+      currency_unassigned_sum: 0,
       currency_breakdown: [],
     },
     expense_items: {
       sum: 0,
+      currency_unassigned_sum: 0,
       currency_breakdown: [],
     },
   };
@@ -172,12 +173,14 @@ export const getRecordStats = async (
       : prices.find((x) => x.currency_id === primaryCurrency).price;
 
   for (const current of records) {
-    if (current.currency_id === null) {
-      recordStats.currency_unassigned += parseFloat(current.amount);
+    if (!current.amount) continue;
+    if (!current.currency_id) {
+      const statItem = current.amount > 0 ? income_items : expense_items;
+      if (statItem.currency_unassigned_sum !== undefined) {
+        statItem.currency_unassigned_sum += parseFloat(current.amount);
+      }
       continue;
     }
-
-    if (current.amount === 0) continue;
 
     const item = (
       current.amount > 0 ? income_items : expense_items
