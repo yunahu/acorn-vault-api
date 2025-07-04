@@ -7,7 +7,7 @@ export const createUser = (uid: string) =>
 
 export const getUserSettings = async (uid: string) =>
   client
-    .query(`SELECT primary_currency FROM setting WHERE firebase_uid = $1`, [
+    .query(`SELECT primary_currency_id FROM setting WHERE firebase_uid = $1`, [
       uid,
     ])
     .then((r) => r.rows[0]);
@@ -17,19 +17,19 @@ export const getPrimaryCurrency = (uid: string) =>
     .query(
       `SELECT currency.* 
 			FROM currency 
-			INNER JOIN setting on setting.primary_currency = currency.id 
+			INNER JOIN setting on setting.primary_currency_id = currency.id 
 			WHERE setting.firebase_uid = $1`,
       [uid]
     )
     .then((r) => r.rows[0]);
 
 export const getPrimaryCurrencyId = (uid: string) =>
-  getUserSettings(uid).then((x) => x?.primary_currency);
+  getUserSettings(uid).then((x) => x?.primary_currency_id);
 
 export const updateUserSettings = (primaryCurrencyId: number, uid: string) =>
   client
     .query(
-      `UPDATE setting SET primary_currency = $1 WHERE firebase_uid = $2 RETURNING *`,
+      `UPDATE setting SET primary_currency_id = $1 WHERE firebase_uid = $2 RETURNING *`,
       [primaryCurrencyId, uid]
     )
     .then((r) => r.rows[0]);

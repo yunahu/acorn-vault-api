@@ -51,5 +51,7 @@ export const getCoinPrices = async (uid: string) => {
   const primaryCurrency: Currency = await getPrimaryCurrency(uid);
   const prices = await getCoingeckoPrices(primaryCurrency.code.toLowerCase());
 
-  return prices ? { currency: primaryCurrency, prices } : undefined;
+  return prices
+    ? { primary_currency_id: primaryCurrency.id, prices }
+    : undefined;
 };

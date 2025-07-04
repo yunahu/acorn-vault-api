@@ -37,7 +37,7 @@ CREATE TABLE
 CREATE TABLE
 	setting (
 		firebase_uid TEXT UNIQUE NOT NULL,
-		primary_currency SMALLINT REFERENCES currency (id) DEFAULT 1
+		primary_currency_id SMALLINT REFERENCES currency (id) DEFAULT 1
 	);
 
 CREATE TABLE

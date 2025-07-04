@@ -23,14 +23,14 @@ interface StatItem {
 }
 
 export interface AccountStats {
-  primary_currency: number;
+  primary_currency_id: number;
   net_worth: number;
   assets: StatItem;
   liabilities: StatItem;
 }
 
 export interface RecordStats {
-  primary_currency: number;
+  primary_currency_id: number;
   sum: number;
   income_items: StatItem;
   expense_items: StatItem;
@@ -52,7 +52,7 @@ export const getAccountStats = async (uid: string) => {
   }
 
   const accountStats: AccountStats = {
-    primary_currency: primaryCurrencyId,
+    primary_currency_id: primaryCurrencyId,
     assets: {
       sum: 0,
       currency_breakdown: [],
@@ -131,15 +131,15 @@ export const getRecordStats = async (
 ) => {
   const records = await getRecordsWithAccounts(uid, from, to);
 
-  const primaryCurrency = await getPrimaryCurrencyId(uid);
+  const primaryCurrencyId = await getPrimaryCurrencyId(uid);
   const prices = await getLatestPrices();
   const currencies = await getCurrencies();
-  if (!records || !primaryCurrency || !prices || !currencies) {
+  if (!records || !primaryCurrencyId || !prices || !currencies) {
     return;
   }
 
   const recordStats: RecordStats = {
-    primary_currency: primaryCurrency,
+    primary_currency_id: primaryCurrencyId,
     sum: 0,
     income_items: {
       sum: 0,
@@ -168,9 +168,9 @@ export const getRecordStats = async (
   });
 
   const pricePC =
-    primaryCurrency === 1
+    primaryCurrencyId === 1
       ? 1
-      : prices.find((x) => x.currency_id === primaryCurrency).price;
+      : prices.find((x) => x.currency_id === primaryCurrencyId).price;
 
   for (const current of records) {
     if (!current.amount) continue;

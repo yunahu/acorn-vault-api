@@ -18,15 +18,15 @@ export const updateUserSettings = async (
   req: UpdateUserSettingsRequest,
   res: Response
 ) => {
-  const { primary_currency } = req.body;
+  const { primary_currency_id } = req.body;
 
-  if (!primary_currency) {
+  if (!primary_currency_id) {
     res.sendStatus(204);
     return;
   }
 
   const updatedSettings = await userService.updateUserSettings(
-    primary_currency,
+    primary_currency_id,
     req.user.uid
   );
 
