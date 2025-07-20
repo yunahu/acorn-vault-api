@@ -12,3 +12,10 @@ export const getPrices = async (req: GetPricesRequest, res: Response) => {
   const prices = await currenciesService.getPrices(from, to, currency_id);
   res.json(prices);
 };
+
+export const getPrimaryCurrencyPrice = async (req: Request, res: Response) => {
+  const primaryCurrencyPrice = await currenciesService.getPrimaryCurrencyPrice(
+    req.user.uid
+  );
+  res.json(primaryCurrencyPrice);
+};

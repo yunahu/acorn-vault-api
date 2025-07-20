@@ -1,5 +1,6 @@
 import axios from 'axios';
 import client from 'src/services/postgres-service';
+import { getPrimaryCurrencyId } from 'src/services/user-service';
 
 export interface Currency {
   id: number;
@@ -80,6 +81,14 @@ export const getPrices = async (
   else return updatePrices(from, to, currencyId);
 };
 
+export const getLatestPrice = (currencyId: number) =>
+  client
+    .query(
+      `SELECT price FROM price where currency_id = $1 ORDER BY date DESC limit 1`,
+      [currencyId]
+    )
+    .then((r) => r.rows[0]['price']);
+
 export const getLatestPrices = async () =>
   client
     .query(
@@ -88,3 +97,9 @@ export const getLatestPrices = async () =>
 			ORDER BY currency_id, date DESC`
     )
     .then((r) => r.rows);
+
+export const getPrimaryCurrencyPrice = async (uid: string) => {
+  const primaryCurrencyId = await getPrimaryCurrencyId(uid);
+  if (primaryCurrencyId === 1) return 1;
+  else return getLatestPrice(primaryCurrencyId);
+};
